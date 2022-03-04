@@ -29,7 +29,7 @@ var pError = func(args...interface{}){
 }
 var (
 	ADD = newOpp("add", "adds a new peer to how peer list")
-	CONNECT = newOpp("connect", "chooses a peer and connect to it")
+	PING = newOpp("ping", "chooses a peer and connect to it")
 	LIST = newOpp("list", "list all the peers")
 	RECORDS = newOpp("records", "list all the records")
 	HELP = newOpp("help", "display all the option")
@@ -38,7 +38,7 @@ var (
 
 var MENU = []MenuOpp{
 	ADD,
-	CONNECT,
+	PING,
 	LIST,
 	RECORDS,
 	HELP,
@@ -64,7 +64,6 @@ func runReceiver(h Host) {
 	fmt.Println("Received sign shutting down")
 
 }
-
 
 
 func runAddPeer(h Host){
@@ -130,8 +129,8 @@ func run(h Host) {
 		case ADD.option:
 			runAddPeer(h)
 
-		case CONNECT.option:
-			runSender(h)
+		case PING.option:
+			go runSender(h)
 
 		case LIST.option:
 			runList(h)
@@ -141,6 +140,7 @@ func run(h Host) {
 
 		case HELP.option:
 			runHelp()
+		
 
 		case "":
 		case EXIT.option:
@@ -180,7 +180,6 @@ func main() {
 		flag.CommandLine.PrintDefaults()
 		os.Exit(0)
 	}
-
 
 	// set up 
 	h, err := makeHost(0, 0)
