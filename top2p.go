@@ -22,8 +22,8 @@ type Record struct{
 }
 */
 
-const (
-	PID = "/tmp/1.0.0"
+const (					// think abou the name :?
+	PID = "/tmp/1.0.0" // /ipfs/tmp/1.0.0
 	FILE_NAME = "Records.txt"
 )
 /*
@@ -98,10 +98,10 @@ func pingPeer(peerID peer.ID, h Host) error {
 
 	rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
 
-	buf := make([]byte, 1)
 
-	const L = 'a' // try to make it random
-	buf[0] = L
+	var L uint8 = uint8(rand.Uint32())
+
+	buf := []byte{L}
 
 	t := time.Now()
 	_, err = rw.Write(buf)
@@ -131,6 +131,7 @@ func pingPeer(peerID peer.ID, h Host) error {
 
 	// later
 	
+	// ignore all these erros :>
 	if _, err = file.WriteString(msg); err != nil{
 		return err
 	}
@@ -142,10 +143,12 @@ func pingPeer(peerID peer.ID, h Host) error {
 	if err = file.Close(); err != nil{
 		return err
 	}
+
 	// look at this later :)
 
+	// think about this thing ...
 	if buf[0] != L {
-		return fmt.Errorf("not received %c received %c", L, buf[0]) // not of your business
+		return fmt.Errorf("not received %d received %d", L, buf[0]) // not of your business
 	}
 
 	log.Println("Ponged")
@@ -172,6 +175,11 @@ func runSender(h Host) {
 	}
 
 	target := rand.Intn(pSize)
+	for peers[target] == h.ID(){
+		target = rand.Intn(pSize)
+	}
+
+	/*
 	if peers[target] == h.ID(){
 		if(target < pSize - 1){
 			target++
@@ -179,11 +187,12 @@ func runSender(h Host) {
 			target--
 		}
 	}
+	*/
 
 	// change this later
-	var peerID = peers[target]
+	//var peerID = peers[target]
 	
-	if err := pingPeer(peerID, h); err != nil {
+	if err := pingPeer(peers[target], h); err != nil {
 		log.Fatal(err)
 		return
 	}

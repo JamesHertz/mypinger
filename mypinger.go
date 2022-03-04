@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"math/rand"
+	"time"
 	//"log"
 	"os"
 	"os/signal"
@@ -162,6 +164,7 @@ func run(h Host) {
 
 func main() {
 
+	rand.Seed(int64(time.Now().Nanosecond())) // no need to do this in ipfs
 	var( 
 		wait, noProtocol bool
 		dst string
