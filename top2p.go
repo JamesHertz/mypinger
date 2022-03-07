@@ -10,8 +10,10 @@ import (
 	"time"
 
 	"errors"
+	mesurer "mypinger/final"
+
 	// github packages
-	"github.com/libp2p/go-libp2p-core/network"
+//	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 )
 
@@ -24,61 +26,12 @@ type Record struct{
 */
 
 const ( // think abou the name :?
-	PID       = "/tmp/1.0.0" // /ipfs/tmp/1.0.0
+	PID       = mesurer.PID
 	FILE_NAME = "Records.txt"
 )
 
-var (
-	errHasNoPeers = errors.New("has no peer")
-	errDoNotSupportProtocol = errors.New("peer doesn't support protocol")
-)	
+var errHasNoPeers = errors.New("has no peer")
 
-var noSupportedPeers = make(map[peer.ID]bool)
-
-
-
-/*
-	Idea:
-	type Record struct{
-		Sender [34]byte
-		Receiver [34]byte
-		RTT int64
-	}
-*/
-
-func handleStream(s network.Stream) {
-
-	log.Println("Received a connection")
-
-	rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
-
-	buf := make([]byte, 1)
-	_, err := rw.Read(buf)
-
-	if err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-
-	log.Println("Pinged")
-
-	_, err = rw.Write(buf)
-
-	if err != nil {
-		log.Fatal(err.Error())
-		return
-	}
-
-	rw.Flush()
-
-	if err = s.Close(); err != nil {
-		log.Fatal("Error: ", err.Error())
-		return
-	}
-
-	log.Println("connection closed")
-
-}
 
 func openFile() *os.File {
 
@@ -97,18 +50,6 @@ func openFile() *os.File {
 	return file
 }
 
-func SupportsProtocol(peerID peer.ID, h Host) bool{
-
-	protos, _ :=  h.Peerstore().GetProtocols(peerID)
-	for _, proto := range protos{
-		if proto == PID{
-			return true
-		} 
-	}
-
-	return false
-}
-
 // change later
 func pingPeer(peerID peer.ID, h Host) error {
 
@@ -116,9 +57,9 @@ func pingPeer(peerID peer.ID, h Host) error {
 	// check if peer suppports protocol
 	// I'm gonna do something related to this
 	/*
-	if !SupportsProtocol(peerID, h){
-		return errDoNotSupportProtocol
-	}
+		if !SupportsProtocol(peerID, h){
+			return errDoNotSupportProtocol
+		}
 	*/
 
 	s, err := h.NewStream(context.Background(), peerID, PID)
@@ -145,7 +86,6 @@ func pingPeer(peerID peer.ID, h Host) error {
 	rw.Flush()
 
 	_, err = rw.Read(buf)
-
 
 	if err != nil {
 		return err
@@ -191,8 +131,8 @@ func chooseAndPing(h Host) error {
 	peers := h.Peerstore().Peers()
 	pSize := len(peers)
 
-	if pSize <= (1 + len(noSupportedPeers)){
-		return errHasNoPeers 
+	if pSize <= 1 {
+		return errHasNoPeers
 	}
 
 	target := rand.Intn(pSize)
@@ -201,19 +141,8 @@ func chooseAndPing(h Host) error {
 		target = rand.Intn(pSize)
 	}
 
-	/*
-		if peers[target] == h.ID(){
-			if(target < pSize - 1){
-				target++
-			}else{
-				target--
-			}
-		}
-	*/
-
 
 	if err := pingPeer(peers[target], h); err != nil {
-		noSupportedPeers[peers[target]] = true
 		// if doesn't support the protocol do nothing by now
 		// wait and continue
 		return err
@@ -226,8 +155,7 @@ func chooseAndPing(h Host) error {
 //CHANGE LATER
 // requires time > 0
 func runSender(h Host) {
-
-	if err := chooseAndPing(h); err != nil{
+	if err := chooseAndPing(h); err != nil {
 		log.Fatal(err)
 	}
 }

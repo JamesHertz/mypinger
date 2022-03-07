@@ -64,3 +64,22 @@ func makeHost(seed int64, port int) (Host, error) {
 		libp2p.Identity(prvKey),
 	)
 }
+
+/*
+priv, _, err := crypto.GenerateKeyPairWithReader(crypto.ECDSA, 2048, r)
+	if err != nil {
+		return nil, err
+	}
+
+	madrr, err := multiaddr.NewMultiaddr(fmt.Sprintf("/ip4/%s/udp/%d/quic", listenAddr, listenPort))
+	if err != nil {
+		return nil, err
+	}
+
+	host, err := libp2p.New(
+		libp2p.Identity(priv), //the key to provide the nodes identity
+		libp2p.Transport(quic.NewTransport), //we want to use QUIC
+		//libp2p.ListenAddrStrings(fmt.Sprintf("/ipv4/%s/udp/%d/quic", listenAddr, listenPort)), //we are going to listen here for incoming connections
+		libp2p.ListenAddrs(madrr), //we are going to listen here for incoming connections
+	)
+*/
